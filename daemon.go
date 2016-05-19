@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"os"
 )
 
 // sources holds all reported sources
@@ -28,6 +29,7 @@ var countsLock sync.Mutex
 
 func runDaemon() {
 	http.HandleFunc("/coverage", collectCoverage)
+	http.HandleFunc("/quit", handleQuit)
 	http.HandleFunc("/", handleReporting)
 
 	http.ListenAndServe(*connection, nil)
@@ -133,6 +135,10 @@ func readNetstring(r *bufio.Reader) string {
 	}
 
 	return string(resultBuf)
+}
+
+func handleQuit(w http.ResponseWriter, r *http.Request) {
+	os.Exit(0)
 }
 
 func handleReporting(w http.ResponseWriter, r *http.Request) {
