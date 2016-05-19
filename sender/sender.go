@@ -10,7 +10,7 @@ import (
 
 var con net.Conn
 
-func InitConnection(receiver string) {
+func initConnection(receiver string) {
 	if con != nil {
 		return
 	}
@@ -24,16 +24,22 @@ func InitConnection(receiver string) {
 	fmt.Fprintf(con, "POST /coverage HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n")
 }
 
-func ReportFile(filename string, source string) {
+func ReportFile(receiver string, filename string, source string) {
+	initConnection(receiver)
+
 	chunk := fmt.Sprintf("F%d:%s%d:%s", len(filename), filename, len(source), source)
 	fmt.Fprintf(con, "%x\r\n%s\r\n", len(chunk), chunk)
 }
 
-func ReportBlock(filename string, startLine int, startCol int, endLine int, endCol int, numStmt int) {
+func ReportBlock(receiver string, filename string, startLine int, startCol int, endLine int, endCol int, numStmt int) {
+	initConnection(receiver)
+
 	chunk := fmt.Sprintf("B%d:%s%d:%d:%d:%d:%d:", len(filename), filename, startLine, startCol, endLine, endCol, numStmt)
 	fmt.Fprintf(con, "%x\r\n%s\r\n", len(chunk), chunk)
 }
-func ReportCover(filename string, startLine int, startCol int, endLine int, endCol int, numStmt int) {
+func ReportCover(receiver string, filename string, startLine int, startCol int, endLine int, endCol int, numStmt int) {
+	initConnection(receiver)
+
 	chunk := fmt.Sprintf("C%d:%s%d:%d:%d:%d:%d:", len(filename), filename, startLine, startCol, endLine, endCol, numStmt)
 	fmt.Fprintf(con, "%x\r\n%s\r\n", len(chunk), chunk)
 }

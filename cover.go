@@ -42,11 +42,11 @@ var (
 	coverCall     = flag.String("coverCall", "", "name of the function to call to count statement execution")
 	blockCall     = flag.String("blockCall", "", "name of the function to call to report existence of a block")
 	sourceCall    = flag.String("sourceCall", "", "name of the function to call to report file sources")
-	initCall      = flag.String("initCall", "", "name of the function to call to initialize connection")
 	output        = flag.String("o", "", "output file")
 	daemon        = flag.Bool("daemon", false, "whether to run as sidechannel daemon")
 	connection    = flag.String("connection", "", "how to reach the sidechannel daemon")
 	allStatements = flag.Bool("allStatements", true, "whether to count each statement separately")
+	sourceName    = flag.String("sourceName", "", "source file name to report to the daemon")
 )
 
 const (
@@ -93,8 +93,8 @@ func main() {
 			*sourceCall = fmt.Sprintf("%s.ReportFile", senderPackageName)
 		}
 
-		if *initCall == "" {
-			*initCall = fmt.Sprintf("%s.InitConnection", senderPackageName)
+		if *sourceName == "" {
+			*sourceName = inputFile
 		}
 
 		annotate(inputFile)
@@ -412,7 +412,8 @@ func (f *File) newCounter(start, end token.Pos, numStmt int) ast.Stmt {
 	call := &ast.CallExpr{
 		Fun: ast.NewIdent(*coverCall),
 		Args: []ast.Expr{
-			f.stringLiteral(inputFile),
+			f.stringLiteral(*connection),
+			f.stringLiteral(*sourceName),
 			f.intLiteral(posStart.Line),
 			f.intLiteral(posStart.Column),
 			f.intLiteral(posEnd.Line),
@@ -635,22 +636,17 @@ func (f *File) addSidechannel(w io.Writer) {
 		log.Fatalf("cover: %s: %s", inputFile, err)
 	}
 
-	// Connect via the sidechannel (or die trying)
-	fmt.Fprintf(w, `
-func init() {
-	%s(%s)
-`, *initCall, f.quoteString(*connection))
-
 	// Report this file running
 	fmt.Fprintf(w, `
-	%s(%s, %s)
-`, *sourceCall, f.quoteString(inputFile), f.quoteString(string(source)))
+func init() {
+	%s(%s, %s, %s)
+`, *sourceCall, f.quoteString(*connection), f.quoteString(*sourceName), f.quoteString(string(source)))
 
 	// Report all block of this file
 	for _, b := range f.blocks {
 		fmt.Fprintf(w, `
-	%s(%s, %d, %d, %d, %d, %d)
-`, *blockCall, f.quoteString(inputFile), b.startLine, b.startCol, b.endLine, b.endCol, b.numStmt)
+	%s(%s, %s, %d, %d, %d, %d, %d)
+`, *blockCall, f.quoteString(*connection), f.quoteString(*sourceName), b.startLine, b.startCol, b.endLine, b.endCol, b.numStmt)
 	}
 
 	fmt.Fprintf(w, `
