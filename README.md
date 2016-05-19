@@ -10,21 +10,26 @@ throw it over most fences.
 
 Installation:
 ```
-go install github.com/Drahflow/fullcover
+go get github.com/Drahflow/fullcover
 ```
 
 Rewriting code to report coverage:
 ```
-go tool fullcover -mode=remote -conection=localhost:10001 -o generated.go source.go
+fullcover -mode=remote -conection=localhost:10001 -o generated.go your-source.go
 ```
 
 Getting your coverage report:
 ```
-go tool fullcover -connection=:10001 -daemon
+fullcover -connection=:10001 -daemon
 
 go build generated.go && ./generated
 
 firefox http://localhost:10001/
+```
+
+Stopping the collection daemon:
+```
+wget -O - http://localhost:10001/quit
 ```
 
 ## Planned features
