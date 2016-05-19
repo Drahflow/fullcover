@@ -138,7 +138,7 @@ func readNetstring(r *bufio.Reader) string {
 }
 
 func handleQuit(w http.ResponseWriter, r *http.Request) {
-	os.Exit(0)
+	go os.Exit(0)
 }
 
 func handleReporting(w http.ResponseWriter, r *http.Request) {
