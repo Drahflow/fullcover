@@ -15,7 +15,7 @@ go get github.com/Drahflow/fullcover
 
 Rewriting code to report coverage:
 ```
-fullcover -mode=remote -conection=localhost:10001 -o generated.go your-source.go
+fullcover -mode=remote -connection=localhost:10001 -o generated.go your-source.go
 ```
 
 Getting your coverage report:
